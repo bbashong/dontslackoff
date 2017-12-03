@@ -37,7 +37,7 @@ namespace headmotion
         void Update()
         {
             // Record orientation
-            Quaternion q = InputTracking.GetLocalRotation(VRNode.Head);
+            Quaternion q = UnityEngine.XR.InputTracking.GetLocalRotation(UnityEngine.XR.XRNode.Head);
 
             hdms.AddFirst(new hdm(Time.time, q));
             if (hdms.Count >= 120)
