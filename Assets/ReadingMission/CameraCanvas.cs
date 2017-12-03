@@ -33,6 +33,8 @@ namespace ReadingMission {
 			_clearColors = _brushTex.GetPixels();	
 			_totalPixel = renderTex.width * renderTex.height;
 			_paintedPixel = 0;
+			Debug.Assert(_brushTex != null);
+			Debug.Assert(_clearColors != null);
 		}
 	
 		private void Update () {
@@ -70,6 +72,27 @@ namespace ReadingMission {
 			}
 			_drawTex.Apply();
 			_brushTex.Apply();
+		}
+
+		public void CopyCanvas(CameraCanvas other) {
+			_paintedPixel = other._paintedPixel;
+			Debug.Assert(_brushTex != null);
+			Debug.Assert(_clearColors != null);
+			_brushTex.SetPixels(_clearColors);
+            _brushTex.Apply();
+			_drawTex.SetPixels(other._drawTex.GetPixels());	
+			_drawTex.Apply();
+			GetComponent<Renderer>().material.mainTexture = other.GetComponent<Renderer>().material.mainTexture;
+		}
+
+		public void ClearCanvas(Texture2D newTexture) {
+			_paintedPixel = 0;
+			_brushTex.SetPixels(_clearColors);
+            _brushTex.Apply();
+			_drawTex.SetPixels(_clearColors);
+			_drawTex.Apply();
+			GetComponent<Renderer>().material.mainTexture = newTexture;
+			GetComponent<Renderer>().material.SetTexture("_MainTex", GetComponent<Renderer>().material.mainTexture);
 		}
 	}
 }
