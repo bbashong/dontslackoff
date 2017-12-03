@@ -11,7 +11,6 @@
 using System;
 using UnityEngine;
 using System.Collections;
-using NUnit.Framework;
 using VRTK;
 
 namespace ReadingMission {
