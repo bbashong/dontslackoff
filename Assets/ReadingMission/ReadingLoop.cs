@@ -34,7 +34,7 @@ namespace ReadingMission {
 			_currentReadCount = ReadCount;
 			SetPlayTimeTxt();
 			SetPercentageTxt(0);
-			SetReadCountTxt();
+			SetReadCountTxt(false);
 			SetPaperStackThickness(PaperToReadStack, PaperToRead, _currentReadCount);
 			SetPaperStackThickness(PaperCompleteStack, PaperComplete, ReadCount - _currentReadCount);
 		}
@@ -59,7 +59,7 @@ namespace ReadingMission {
 			if (comp > 0.95f) {
 				// swap paper
 				_currentReadCount -= 1;
-				SetReadCountTxt();
+				SetReadCountTxt(true);
                 SetPaperStackThickness(PaperToReadStack, PaperToRead, _currentReadCount);
                 SetPaperStackThickness(PaperCompleteStack, PaperComplete, ReadCount - _currentReadCount);
 				
@@ -99,12 +99,15 @@ namespace ReadingMission {
 			PercentageTxt.GetComponent<RectTransform>().localScale = new Vector3(scale, scale, scale);
 		}
 
-		private void SetReadCountTxt() {
+		private void SetReadCountTxt(bool animate) {
 			RemainCountTxt.text = string.Format(
 				CountFormat, 
 				_currentReadCount
             );
 			RemainCountTxt.color = GetTxtColor(1 - _currentReadCount / (float)ReadCount);
+			if (animate) {
+                RemainCountTxt.GetComponent<Animator>().SetTrigger("Changed");
+			}
 		}
 
 		private static void SetPaperStackThickness(GameObject paperStack, GameObject topPaper, uint count) {
