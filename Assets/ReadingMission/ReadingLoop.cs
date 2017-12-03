@@ -95,6 +95,8 @@ namespace ReadingMission {
 				Mathf.RoundToInt(completness * 100)
             );
 			PercentageTxt.color = GetTxtColor(completness);
+			var scale = 1 + completness;
+			PercentageTxt.GetComponent<RectTransform>().localScale = new Vector3(scale, scale, scale);
 		}
 
 		private void SetReadCountTxt() {
@@ -105,7 +107,7 @@ namespace ReadingMission {
 			RemainCountTxt.color = GetTxtColor(1 - _currentReadCount / (float)ReadCount);
 		}
 
-		private void SetPaperStackThickness(GameObject paperStack, GameObject topPaper, uint count) {
+		private static void SetPaperStackThickness(GameObject paperStack, GameObject topPaper, uint count) {
 			if (count == 0) {
 				paperStack.GetComponent<Renderer>().enabled = false;
 				topPaper.GetComponent<Renderer>().enabled = false;
