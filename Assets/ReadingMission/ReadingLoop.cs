@@ -10,28 +10,48 @@ namespace ReadingMission {
 		public GameObject PaperComplete;
 		public GameObject PaperToReadStack;
 		public GameObject PaperCompleteStack;
+		public Image SleepBlocker;
 		public Text RemainTimeTxt;
 		public Text RemainCountTxt;
 		public Text PercentageTxt;
 		public float PlayTime;
 		public uint ReadCount;
 		public Texture2D[] PaperTextures;
+		public float LoveDebuffStart;	
+		public float LoveDebuffEnd;	
+		public float GameDebuffStart;	
+		public float GameDebuffEnd;
+		public float InitialFallingSleepTime;
+		public float InitialSleepDistance;
 
 		private const string TimeFormat = "Remain Time: {0}";	
 		private const string CountFormat = "Remain Count: {0}";	
 		private const string PercentFormat = "{0}%";
-		private const string PageTextureNameFormat = "page-texture-{0:2}";
 		private const float ThicknessPerPaper = 0.01f;
 		private const float OriginalPaperY = 1.49f;
+		
+		private enum DebuffType {
+			None,
+			Love,
+			Game,
+			Sleep
+		}
 		
 		private Color32 _minColor = new Color32(252, 0, 88, 255);
 		private Color32 _maxColor = new Color32(0, 252, 167, 255);
 		private float _currentPlayTime;
 		private uint _currentReadCount;
+		private float _currentFallingSleepTime;
+		private float _currentSleepDistance;
+		private float _remainFallingSleepTime;
+		private float _remainSleepDistance;
+		private DebuffType _currentDebuffType;
+		
 	
 		private void Start () {
 			_currentPlayTime = PlayTime;
 			_currentReadCount = ReadCount;
+			_currentDebuffType = DebuffType.None;
 			SetPlayTimeTxt();
 			SetPercentageTxt(0);
 			SetReadCountTxt(false);
