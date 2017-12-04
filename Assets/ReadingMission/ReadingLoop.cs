@@ -32,7 +32,11 @@ namespace ReadingMission {
 		public float LoveDebuffEnd;	
 		public float GameDebuffStart;	
 		public float GameDebuffEnd;
-		public float InitialFallingSleepTime;
+    public float NoiseDebuffStart;
+    public float NoiseDebuffEnd;
+    public float DanceDebuffStart;
+    public float DanceDebuffEnd;
+    public float InitialFallingSleepTime;
 
 		private const string TimeFormat = "Remain Time: {0}";	
 		private const string CountFormat = "Remain Count: {0}";	
@@ -44,7 +48,9 @@ namespace ReadingMission {
 			None,
 			Love,
 			Game,
-			Sleep
+			Sleep,
+      Noise,
+      Dance
 		}
 		
 		private Color32 _minColor = new Color32(252, 0, 88, 255);
@@ -88,7 +94,13 @@ namespace ReadingMission {
 			else if (_elapsedTime > GameDebuffStart && _elapsedTime < GameDebuffEnd) {
 				SetDebuffType(DebuffType.Game);
 			}
-			else {
+      else if (_elapsedTime > NoiseDebuffStart && _elapsedTime < NoiseDebuffEnd) {
+        SetDebuffType(DebuffType.Noise);
+      }
+      else if (_elapsedTime > DanceDebuffStart && _elapsedTime < DanceDebuffEnd) {
+        SetDebuffType(DebuffType.Dance);
+      }
+      else {
 				SetDebuffType(DebuffType.None);
 			}
 		}
@@ -238,6 +250,20 @@ namespace ReadingMission {
                 SubTitleText.GetComponent<CanvasRenderer>().SetAlpha(1.0f);
                 _brush.SetBrushType(CameraBrush.BrushType.Sleep);
 			}
+      else if (type == DebuffType.Noise) {
+        SubTitleText.text = "Unwelcomed intruder comes...";
+        SubTitleText.GetComponent<CanvasRenderer>().SetAlpha(1.0f);
+        _brush.SetBrushType(CameraBrush.BrushType.Noise);
+
+
+      }
+      else if (type == DebuffType.Dance) {
+        SubTitleText.text = "My Roommates held HELL Dancing Party....";
+        SubTitleText.GetComponent<CanvasRenderer>().SetAlpha(1.0f);
+        _brush.SetBrushType(CameraBrush.BrushType.Dance);
+
+
+      }
 			Invoke("HideSubtitle", 5);
 		}
 
