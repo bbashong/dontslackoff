@@ -15,6 +15,12 @@ using VRTK;
 
 namespace ReadingMission {
     public class CameraBrush : MonoBehaviour {
+        public enum BrushType {
+            Normal,
+            Love,
+            Game,
+            Sleep
+        }
         public Texture2D Brush;
         public Vector2 BrushSize = new Vector2(0.5f, 0.5f);
         public GameObject Target;
@@ -72,6 +78,10 @@ namespace ReadingMission {
             result.SetPixels(rpixels,0); 
             result.Apply(); 
             return result; 
+        }
+
+        public void SetBrushType(BrushType type) {
+            
         }
     }
 }

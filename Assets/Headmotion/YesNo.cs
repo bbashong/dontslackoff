@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using headmotion;
+using Wakeup_mission;
 
 namespace headmotion
 {
@@ -11,24 +12,21 @@ namespace headmotion
         void Start()
         {
             vrGesture.YesHandler += OnYes;
-            vrGesture.ShakeHandler += OnShake;
+            vrGesture.NoHandler += OnNo;
         }
 
         void OnYes()
         {
             Debug.Log("YES!!");
-            //INSERT HANDLER FOR YES MOTION
-
-            gamebehavior.gesture = 1;
-            gamebehavior.new_gesture = true;
+            GestureGame.gesture = 1;
+            GestureGame.new_gesture = true;
         }
 
-        void OnShake(int shakeCount, float timePerShake)
+        void OnNo()
         {
-            Debug.LogFormat("NO!! {0}, {1}",shakeCount, timePerShake);
-            //INSERT HANDLER FOR NO MOTION
-            gamebehavior.gesture = 2;
-            gamebehavior.new_gesture = true;
+            Debug.LogFormat("NO!!");
+            GestureGame.gesture = 2;
+            GestureGame.new_gesture = true;
         }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Timers;
+using headmotion;
 using UnityEngine;
 using UnityEngine.UI;
+using Wakeup_mission;
 
 namespace ReadingMission {
 	public class ReadingLoop : MonoBehaviour {
@@ -22,7 +24,6 @@ namespace ReadingMission {
 		public float GameDebuffStart;	
 		public float GameDebuffEnd;
 		public float InitialFallingSleepTime;
-		public float InitialSleepDistance;
 
 		private const string TimeFormat = "Remain Time: {0}";	
 		private const string CountFormat = "Remain Count: {0}";	
@@ -42,26 +43,30 @@ namespace ReadingMission {
 		private float _currentPlayTime;
 		private uint _currentReadCount;
 		private float _currentFallingSleepTime;
-		private float _currentSleepDistance;
 		private float _remainFallingSleepTime;
-		private float _remainSleepDistance;
 		private DebuffType _currentDebuffType;
+		private CameraBrush _brush;
 		
 	
 		private void Start () {
+			_brush = GetComponent<CameraBrush>();
 			_currentPlayTime = PlayTime;
 			_currentReadCount = ReadCount;
 			_currentDebuffType = DebuffType.None;
+			_currentFallingSleepTime = InitialFallingSleepTime;
+			_remainFallingSleepTime = _currentFallingSleepTime;
 			SetPlayTimeTxt();
 			SetPercentageTxt(0);
 			SetReadCountTxt(false);
 			SetPaperStackThickness(PaperToReadStack, PaperToRead, _currentReadCount);
 			SetPaperStackThickness(PaperCompleteStack, PaperComplete, ReadCount - _currentReadCount);
+			GetComponent<VRGesture>().ShakeHandler += OnShake;
 		}
 	
 		private void Update () {
 			UpdateTimer();	
 			UpdatePercentage();
+			UpdateSleep();
 		}
 
 		private void UpdateTimer() {
@@ -89,6 +94,21 @@ namespace ReadingMission {
 				PaperComplete.GetComponent<CameraCanvas>().CopyCanvas(Paper.GetComponent<CameraCanvas>());
 				Paper.GetComponent<CameraCanvas>().CopyCanvas(PaperToRead.GetComponent<CameraCanvas>());
 				PaperToRead.GetComponent<CameraCanvas>().ClearCanvas(PaperTextures[ReadCount % PaperTextures.Length]);
+			}
+		}
+
+		private void UpdateSleep() {
+			if (_remainFallingSleepTime <= 0) {
+				return;
+			}
+			_remainFallingSleepTime -= Time.deltaTime;
+			if (_remainFallingSleepTime <= 0) {
+				OnSlept();
+			}
+			else {
+                var color = SleepBlocker.color;
+                color.a = 1 - (_remainFallingSleepTime / _currentFallingSleepTime);
+                SleepBlocker.color = color;
 			}
 		}
 
@@ -146,6 +166,38 @@ namespace ReadingMission {
 			beforePos = topPaper.transform.localPosition;
 			topPaper.transform.localPosition = new Vector3(beforePos.x, OriginalPaperY + count * ThicknessPerPaper + 0.0001f, beforePos.z);
 		}
-		
+
+		private void OnSlept() {
+			_currentFallingSleepTime = InitialFallingSleepTime;
+			_brush.SetBrushType(CameraBrush.BrushType.Sleep);
+			GetComponent<GestureGame>().StartGame(this);
+		}
+
+		private void OnShake(float timePerShake) {
+			if (_remainFallingSleepTime <= 0 || (_currentFallingSleepTime - _remainFallingSleepTime) <= 1) {
+				return;
+			}
+			if (timePerShake <= 0.15) {
+                _currentFallingSleepTime *= 0.666f;
+                _remainFallingSleepTime = _currentFallingSleepTime;
+			}
+		}
+
+		public void OnWakeUp() {
+			_brush.SetBrushType(GetBrushType());
+            _remainFallingSleepTime = _currentFallingSleepTime;
+		}
+
+		private CameraBrush.BrushType GetBrushType() {
+			if (_currentDebuffType == DebuffType.Love) {
+				return CameraBrush.BrushType.Love;
+			}
+			else if (_currentDebuffType == DebuffType.Game) {
+				return CameraBrush.BrushType.Game;
+			}
+			else {
+				return CameraBrush.BrushType.Normal;
+			}
+		}
 	}
 }
