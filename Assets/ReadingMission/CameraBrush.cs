@@ -74,11 +74,20 @@ namespace ReadingMission {
             else if (_brushType == BrushType.Noise) {
                 _nextSizeChange += Time.deltaTime;
                 if (_nextSizeChange > 0.3f) {
-                  _brushSizeScale = new Vector2(UnityEngine.Random.Range(0.5f, 1.5f), UnityEngine.Random.Range(0.5f, 1.5f));
+                  _brushSizeScale = new Vector2(1.0f, UnityEngine.Random.Range(0.2f, 1.0f));
                   _nextSizeChange = 0.0f;
+                  ResizeBrush();
                 }
             }
-
+            else if (_brushType == BrushType.Dance) {
+              _nextSizeChange += Time.deltaTime;
+              if (_nextSizeChange > 0.3f)
+              {
+                _brushSizeScale = new Vector2(UnityEngine.Random.Range(0.5f, 1.5f), UnityEngine.Random.Range(0.5f, 1.5f));
+                _nextSizeChange = 0.0f;
+                ResizeBrush();
+              }
+            }
             if (Physics.Raycast(_cam.transform.position, direction, out hit) 
                 && string.Equals(hit.transform.gameObject.name, Target.name)) {
                 centerTextCoord = hit.textureCoord;

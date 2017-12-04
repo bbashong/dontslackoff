@@ -20,7 +20,9 @@ namespace ReadingMission {
 		public GameObject PaperComplete;
 		public GameObject PaperToReadStack;
 		public GameObject PaperCompleteStack;
-		public Image SleepBlocker;
+    public GameObject DanceEventInstance;
+    public GameObject NoiseEventInstance;
+    public Image SleepBlocker;
 		public Text RemainTimeTxt;
 		public Text RemainCountTxt;
 		public Text PercentageTxt;
@@ -78,21 +80,22 @@ namespace ReadingMission {
 			SetPaperStackThickness(PaperCompleteStack, PaperComplete, ReadCount - _currentReadCount);
 			GetComponent<VRGesture>().ShakeHandler += OnShake;
 			_elapsedTime = 0.0f;
-		}
+    }
 	
 		private void Update () {
 			_elapsedTime += Time.deltaTime;
 			UpdateTimer();	
 			UpdatePercentage();
-			UpdateSleep();
 			if (_currentDebuffType == DebuffType.Sleep) {
 				// pass	
 			}
 			else if (_elapsedTime > LoveDebuffStart && _elapsedTime < LoveDebuffEnd) {
-				SetDebuffType(DebuffType.Love);
+        UpdateSleep();
+        SetDebuffType(DebuffType.Love);
 			}
 			else if (_elapsedTime > GameDebuffStart && _elapsedTime < GameDebuffEnd) {
-				SetDebuffType(DebuffType.Game);
+        UpdateSleep();
+        SetDebuffType(DebuffType.Game);
 			}
       else if (_elapsedTime > NoiseDebuffStart && _elapsedTime < NoiseDebuffEnd) {
         SetDebuffType(DebuffType.Noise);
@@ -101,7 +104,8 @@ namespace ReadingMission {
         SetDebuffType(DebuffType.Dance);
       }
       else {
-				SetDebuffType(DebuffType.None);
+        UpdateSleep();
+        SetDebuffType(DebuffType.None);
 			}
 		}
 
@@ -255,14 +259,14 @@ namespace ReadingMission {
         SubTitleText.GetComponent<CanvasRenderer>().SetAlpha(1.0f);
         _brush.SetBrushType(CameraBrush.BrushType.Noise);
 
-
+        NoiseEventInstance.SetActive(true);
       }
       else if (type == DebuffType.Dance) {
         SubTitleText.text = "My Roommates held HELL Dancing Party....";
         SubTitleText.GetComponent<CanvasRenderer>().SetAlpha(1.0f);
         _brush.SetBrushType(CameraBrush.BrushType.Dance);
 
-
+        DanceEventInstance.SetActive(true);
       }
 			Invoke("HideSubtitle", 5);
 		}
