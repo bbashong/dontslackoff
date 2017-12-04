@@ -7,6 +7,7 @@ public class SleepEvent : MonoBehaviour {
   
   float time_limit;
   Vector3 init_position;
+  Quaternion init_rotation;
 	
 	void Start () {
     time_limit = 6.0f;
@@ -18,10 +19,13 @@ public class SleepEvent : MonoBehaviour {
     Camera curr = Camera.main;
     
     if (init_position == Vector3.zero)
+    {
       init_position = curr.transform.position;
+      init_rotation = curr.transform.rotation;
+    }
     
     time_limit -= Time.deltaTime;
-    curr.fieldOfView = curr.fieldOfView + 0.1f;
+    //curr.fieldOfView = curr.fieldOfView + 0.1f;
     
     if (time_limit < 0)
       Restart();
@@ -36,7 +40,8 @@ public class SleepEvent : MonoBehaviour {
   {
     time_limit = 6.0f;
     Camera.main.transform.position = init_position;
-    Camera.main.fieldOfView = 60.0f;
+    Camera.main.transform.rotation = init_rotation;
+    //Camera.main.fieldOfView = 60.0f;
   }
 
   void GameEnds()
