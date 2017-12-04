@@ -61,7 +61,7 @@ namespace ReadingMission {
 					if (paintX < 0 || paintX >= _drawTex.width || paintY < 0 || paintY >= _drawTex.height) {
 						continue;
 					}
-					if (_drawTex.GetPixel(paintX, paintY).a <= 0.0f && brush.GetPixel(x, y).a > 0.0f) {
+					if (_drawTex.GetPixel(paintX, paintY).a <= 0.0f && brush.GetPixel(x, y).a >= 0.9f) {
 						_drawTex.SetPixel(paintX, paintY, new Color(0, 0, 0, 1));
 						_paintedPixel += 1;
 					}

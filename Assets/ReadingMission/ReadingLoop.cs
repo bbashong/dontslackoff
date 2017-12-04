@@ -16,6 +16,7 @@ namespace ReadingMission {
 		public Text RemainTimeTxt;
 		public Text RemainCountTxt;
 		public Text PercentageTxt;
+		public Text SubTitleText;
 		public float PlayTime;
 		public uint ReadCount;
 		public Texture2D[] PaperTextures;
@@ -46,6 +47,7 @@ namespace ReadingMission {
 		private float _remainFallingSleepTime;
 		private DebuffType _currentDebuffType;
 		private CameraBrush _brush;
+		private float _elapsedTime;
 		
 	
 		private void Start () {
@@ -61,12 +63,26 @@ namespace ReadingMission {
 			SetPaperStackThickness(PaperToReadStack, PaperToRead, _currentReadCount);
 			SetPaperStackThickness(PaperCompleteStack, PaperComplete, ReadCount - _currentReadCount);
 			GetComponent<VRGesture>().ShakeHandler += OnShake;
+			_elapsedTime = 0.0f;
 		}
 	
 		private void Update () {
+			_elapsedTime += Time.deltaTime;
 			UpdateTimer();	
 			UpdatePercentage();
 			UpdateSleep();
+			if (_currentDebuffType == DebuffType.Sleep) {
+				// pass	
+			}
+			else if (_elapsedTime > LoveDebuffStart && _elapsedTime < LoveDebuffEnd) {
+				SetDebuffType(DebuffType.Love);
+			}
+			else if (_elapsedTime > GameDebuffStart && _elapsedTime < GameDebuffEnd) {
+				SetDebuffType(DebuffType.Game);
+			}
+			else {
+				SetDebuffType(DebuffType.None);
+			}
 		}
 
 		private void UpdateTimer() {
@@ -169,8 +185,8 @@ namespace ReadingMission {
 
 		private void OnSlept() {
 			_currentFallingSleepTime = InitialFallingSleepTime;
-			_brush.SetBrushType(CameraBrush.BrushType.Sleep);
 			GetComponent<GestureGame>().StartGame(this);
+			SetDebuffType(DebuffType.Sleep);
 		}
 
 		private void OnShake(float timePerShake) {
@@ -184,20 +200,38 @@ namespace ReadingMission {
 		}
 
 		public void OnWakeUp() {
-			_brush.SetBrushType(GetBrushType());
             _remainFallingSleepTime = _currentFallingSleepTime;
+			SetDebuffType(DebuffType.None);
 		}
 
-		private CameraBrush.BrushType GetBrushType() {
-			if (_currentDebuffType == DebuffType.Love) {
-				return CameraBrush.BrushType.Love;
+		private void SetDebuffType(DebuffType type) {
+			if (_currentDebuffType == type) {
+				return;
 			}
-			else if (_currentDebuffType == DebuffType.Game) {
-				return CameraBrush.BrushType.Game;
+			_currentDebuffType = type;
+			if (type == DebuffType.None) {
+                _brush.SetBrushType(CameraBrush.BrushType.Normal);
 			}
-			else {
-				return CameraBrush.BrushType.Normal;
+			else if (type == DebuffType.Love) {
+				SubTitleText.text = "Suddenly I miss my girlfriend who broke up a year ago...";
+                SubTitleText.GetComponent<CanvasRenderer>().SetAlpha(1.0f);
+                _brush.SetBrushType(CameraBrush.BrushType.Love);
 			}
+			else if (type == DebuffType.Game) {
+				SubTitleText.text = "Suddenly I wanna play game... ANY game is ok...";
+                SubTitleText.GetComponent<CanvasRenderer>().SetAlpha(1.0f);
+                _brush.SetBrushType(CameraBrush.BrushType.Game);
+			}
+			else if (type == DebuffType.Sleep) {
+				SubTitleText.text = "I fell asleep! have to escape.";
+                SubTitleText.GetComponent<CanvasRenderer>().SetAlpha(1.0f);
+                _brush.SetBrushType(CameraBrush.BrushType.Sleep);
+			}
+			Invoke("HideSubtitle", 5);
+		}
+
+		private void HideSubtitle() {
+			SubTitleText.GetComponent<CanvasRenderer>().SetAlpha(0.0f);
 		}
 	}
 }
