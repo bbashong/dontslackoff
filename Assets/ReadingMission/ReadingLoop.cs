@@ -1,11 +1,19 @@
 ﻿using System;
+using System.Collections;
 using System.Timers;
 using headmotion;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Wakeup_mission;
 
 namespace ReadingMission {
+	static class ReadingMissionResult {
+		public static bool ReadingFinished;
+		public static float RemainCount;
+		public static float RemainTime;
+	}
+	
 	public class ReadingLoop : MonoBehaviour {
 		public GameObject Paper;
 		public GameObject PaperToRead;
@@ -89,7 +97,7 @@ namespace ReadingMission {
 			_currentPlayTime -= Time.deltaTime;
 			if (_currentPlayTime <= 0) {
 				_currentPlayTime = 0;
-				// End Game
+                StartCoroutine("EndGame");
 			}
 			SetPlayTimeTxt();
 		}
@@ -103,11 +111,14 @@ namespace ReadingMission {
 				SetReadCountTxt(true);
                 SetPaperStackThickness(PaperToReadStack, PaperToRead, _currentReadCount);
                 SetPaperStackThickness(PaperCompleteStack, PaperComplete, ReadCount - _currentReadCount);
-				
-				Debug.Assert(PaperComplete.GetComponent<CameraCanvas>() != null);
-				Debug.Assert(Paper.GetComponent<CameraCanvas>() != null);
-				Debug.Assert(PaperToRead.GetComponent<CameraCanvas>() != null);
 				PaperComplete.GetComponent<CameraCanvas>().CopyCanvas(Paper.GetComponent<CameraCanvas>());
+				if (_currentReadCount == 0) {
+					Paper.GetComponent<Renderer>().enabled = false;
+					PaperToRead.GetComponent<Renderer>().enabled = false;
+					PaperToReadStack.GetComponent<Renderer>().enabled = false;
+					StartCoroutine("EndGame");
+					return;
+				}
 				Paper.GetComponent<CameraCanvas>().CopyCanvas(PaperToRead.GetComponent<CameraCanvas>());
 				PaperToRead.GetComponent<CameraCanvas>().ClearCanvas(PaperTextures[ReadCount % PaperTextures.Length]);
 			}
@@ -232,6 +243,22 @@ namespace ReadingMission {
 
 		private void HideSubtitle() {
 			SubTitleText.GetComponent<CanvasRenderer>().SetAlpha(0.0f);
+		}
+
+		private IEnumerator EndGame() {
+			enabled = false;
+			var t = 0.0f;
+			while (t < 1.5f) {
+				t += 1 / 60.0f;
+                var color = SleepBlocker.color;
+                color.a = t;
+                SleepBlocker.color = color;
+				yield return null;
+			}
+			ReadingMissionResult.ReadingFinished = _currentReadCount == 0;
+			ReadingMissionResult.RemainCount = _currentReadCount / (float)ReadCount;
+			ReadingMissionResult.RemainTime = _currentPlayTime / PlayTime;
+			SceneManager.LoadScene("Ending Scene", LoadSceneMode.Single);	
 		}
 	}
 }

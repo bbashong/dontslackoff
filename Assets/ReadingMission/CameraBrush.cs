@@ -62,12 +62,10 @@ namespace ReadingMission {
             RaycastHit hit;
             var centerTextCoord = new Vector2(float.NaN, float.NaN);
             var direction = _cam.transform.forward;
-            Debug.LogFormat("{0}, {1}", direction, _angleDiff);
             if (_brushType == BrushType.Game) {
                 direction += _angleDiff.x * _cam.transform.right;
                 direction += _angleDiff.y * _cam.transform.up;
             }
-            Debug.LogFormat("{0}", direction);
             if (Physics.Raycast(_cam.transform.position, direction, out hit) 
                 && string.Equals(hit.transform.gameObject.name, Target.name)) {
                 centerTextCoord = hit.textureCoord;
