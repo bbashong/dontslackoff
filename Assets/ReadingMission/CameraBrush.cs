@@ -20,7 +20,6 @@ namespace ReadingMission {
         public GameObject Target;
         private Camera _cam;
         private Texture2D _resizedBrush;
-        private const string _targetTag = "gseriugcidgs345";
 
         protected void Awake() {
             VRTK_SDKManager.instance.AddBehaviourToToggleOnLoadedSetupChange(this);

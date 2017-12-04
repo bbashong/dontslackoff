@@ -10,19 +10,19 @@ namespace headmotion
 
         void Start()
         {
-            vrGesture.NodHandler += OnNod;
-            vrGesture.HeadshakeHandler += OnHeadshake;
+            vrGesture.YesHandler += OnYes;
+            vrGesture.ShakeHandler += OnShake;
         }
 
-        void OnNod()
+        void OnYes()
         {
-            print("YES!!");
+            Debug.Log("YES!!");
             //INSERT HANDLER FOR YES MOTION
         }
 
-        void OnHeadshake()
+        void OnShake(int shakeCount, float timePerShake)
         {
-            print("NO!!");
+            Debug.LogFormat("NO!! {0}, {1}",shakeCount, timePerShake);
             //INSERT HANDLER FOR NO MOTION
         }
     }

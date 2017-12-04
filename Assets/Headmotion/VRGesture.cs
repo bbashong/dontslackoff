@@ -3,6 +3,7 @@ using UnityEngine.VR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using VRTK;
 
 namespace headmotion
 {
@@ -28,21 +29,37 @@ namespace headmotion
         [SerializeField]
         float recognitionInterval = 0.5f;
 
-        public event Action NodHandler;
-        public event Action HeadshakeHandler;
+        private Camera _cam;
+
+        public event Action YesHandler;
+        public event Action<int, float> ShakeHandler;
 
         LinkedList<hdm> hdms = new LinkedList<hdm>();
         float waitTime = 0f;
+        
+        protected void Awake() {
+            VRTK_SDKManager.instance.AddBehaviourToToggleOnLoadedSetupChange(this);
+        }
+
+        protected virtual void OnDestroy() {
+            VRTK_SDKManager.instance.RemoveBehaviourToToggleOnLoadedSetupChange(this);
+        }
+
+        protected virtual void OnEnable() {
+            _cam = VRTK_SDKManager.instance.loadedSetup.headsetSDK.GetHeadsetCamera().GetComponent<Camera>();
+        }
 
         void Update()
         {
             // Record orientation
-            Quaternion q = InputTracking.GetLocalRotation(VRNode.Head);
+//            Quaternion q = InputTracking.GetLocalRotation(VRNode.Head);
+//            Quaternion q = InputTracking.GetLocalRotation(VRNode.Head);
+            Quaternion q = _cam.transform.rotation;
 
-            hdms.AddFirst(new hdm(Time.time, q));
+            hdms.AddLast(new hdm(Time.time, q));
             if (hdms.Count >= 120)
             {
-                hdms.RemoveLast();
+                hdms.RemoveFirst();
             }
             if (waitTime > 0)
             {
@@ -50,8 +67,8 @@ namespace headmotion
             }
             else
             {
-                RecognizeNod();
-                RecognizeHeadshake();
+                RecognizeYes();
+                RecognizeShake();
             }
         }
 
@@ -76,7 +93,7 @@ namespace headmotion
                                             hdm.timestamp >= Time.time - endTime));
         }
 
-        void RecognizeNod()
+        void RecognizeYes()
         {
             try
             {
@@ -87,8 +104,9 @@ namespace headmotion
                 if (xMax - basePos > 10f &&
                     Mathf.Abs(current - basePos) < 5f)
                 {
-                    if (NodHandler != null) { NodHandler.Invoke(); }
+                    if (YesHandler != null) { YesHandler.Invoke(); }
                     waitTime = recognitionInterval;
+                    hdms.Clear();
                 }
             }
             catch (InvalidOperationException)
@@ -97,26 +115,63 @@ namespace headmotion
             }
         }
 
-        void RecognizeHeadshake()
+        void RecognizeShake() 
         {
-            try
-            {
-                float basePos = Range(0.2f, 0.4f).Average(hdm => hdm.eulerAngles.y);
-                float yMax = Range(0.01f, 0.2f).Max(hdm => hdm.eulerAngles.y);
-                float yMin = Range(0.01f, 0.2f).Min(hdm => hdm.eulerAngles.y);
-                float current = hdms.First().eulerAngles.y;
-
-                if ((yMax - basePos > 10f || basePos - yMin > 10f) &&
-                    Mathf.Abs(current - basePos) < 5f)
+            try {
+                var nextType = 0; //0: unknown, 1: pos, 2: neg
+                var diffSum = 0.0f;
+                var shakeCount = 0;
+                var shakeDuration = 0.0f;
+                const float minShake = 10.0f;
+                
+                var beforeY = hdms.First().eulerAngles.y;
+                var beforeShakeTime = float.NaN; 
+                foreach (var hdm in hdms) {
+                    diffSum += GetAngleDiff(beforeY, hdm.eulerAngles.y);
+                    if (nextType == 0) {
+                        if (diffSum > minShake || diffSum < -minShake) {
+                            if (diffSum > minShake) {
+                                nextType = 2;
+                            }
+                            else if (diffSum < -minShake) {
+                                nextType = 1;
+                            }
+                            shakeCount += 1;
+                            beforeShakeTime = hdm.timestamp;
+                        }
+                    }
+                    else if (nextType == 1) {
+                        if (diffSum > minShake) {
+                            nextType = 2;
+                            shakeCount += 1;
+                            shakeDuration = hdm.timestamp - beforeShakeTime;
+                        }
+                    }
+                    else if (nextType == 2) {
+                        if (diffSum < -minShake) {
+                            nextType = 1;
+                            shakeCount += 1;
+                            shakeDuration = hdm.timestamp - beforeShakeTime;
+                        }
+                    }
+                }
+                if (shakeCount > 2)
                 {
-                    if (HeadshakeHandler != null) { HeadshakeHandler.Invoke(); }
+                    if (ShakeHandler != null) { ShakeHandler.Invoke(shakeCount, shakeDuration / shakeCount); }
                     waitTime = recognitionInterval;
+                    hdms.Clear();
                 }
             }
             catch (InvalidOperationException)
             {
                 // pass
             }
+        }
+
+        private static float GetAngleDiff(float from, float to) {
+            var d1 = to - from + 360;
+            var d2 = to - from;
+            return Math.Abs(d1) > Math.Abs(d2) ? d2 : d1;
         }
     }
 }
