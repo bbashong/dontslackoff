@@ -74,7 +74,7 @@ namespace ReadingMission {
             else if (_brushType == BrushType.Noise) {
                 _nextSizeChange += Time.deltaTime;
                 if (_nextSizeChange > 0.3f) {
-                  _brushSizeScale = new Vector2(1.0f, UnityEngine.Random.Range(0.2f, 1.0f));
+                  _brushSizeScale = new Vector2(UnityEngine.Random.Range(0.2f, 1.0f), 1.0f);
                   _nextSizeChange = 0.0f;
                   ResizeBrush();
                 }

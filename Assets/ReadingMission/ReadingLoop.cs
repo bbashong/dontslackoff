@@ -27,17 +27,12 @@ namespace ReadingMission {
 		public Text RemainCountTxt;
 		public Text PercentageTxt;
 		public Text SubTitleText;
+    public AudioSource pageFlipSound;
 		public float PlayTime;
 		public uint ReadCount;
 		public Texture2D[] PaperTextures;
-		public float LoveDebuffStart;	
-		public float LoveDebuffEnd;	
-		public float GameDebuffStart;	
-		public float GameDebuffEnd;
-    public float NoiseDebuffStart;
-    public float NoiseDebuffEnd;
-    public float DanceDebuffStart;
-    public float DanceDebuffEnd;
+		public float LoveDebuffTime;
+		public float GameDebuffTime;
     public float InitialFallingSleepTime;
 
 		private const string TimeFormat = "Remain Time: {0}";	
@@ -45,6 +40,8 @@ namespace ReadingMission {
 		private const string PercentFormat = "{0}%";
 		private const float ThicknessPerPaper = 0.01f;
 		private const float OriginalPaperY = 1.49f;
+
+    private AudioSource clockSound;
 		
 		private enum DebuffType {
 			None,
@@ -64,9 +61,11 @@ namespace ReadingMission {
 		private DebuffType _currentDebuffType;
 		private CameraBrush _brush;
 		private float _elapsedTime;
-		
-	
-		private void Start () {
+    private float _eventEndTime;
+    private const float NO_DECIDED_TIME = 9999f; // should be larger than Playtime
+
+
+    private void Start () {
 			_brush = GetComponent<CameraBrush>();
 			_currentPlayTime = PlayTime;
 			_currentReadCount = ReadCount;
@@ -80,34 +79,68 @@ namespace ReadingMission {
 			SetPaperStackThickness(PaperCompleteStack, PaperComplete, ReadCount - _currentReadCount);
 			GetComponent<VRGesture>().ShakeHandler += OnShake;
 			_elapsedTime = 0.0f;
+      clockSound = GetComponent<AudioSource>();
+      clockSound.volume = 0.0f;
     }
 	
 		private void Update () {
 			_elapsedTime += Time.deltaTime;
 			UpdateTimer();	
 			UpdatePercentage();
-			if (_currentDebuffType == DebuffType.Sleep) {
-				// pass	
-			}
-			else if (_elapsedTime > LoveDebuffStart && _elapsedTime < LoveDebuffEnd) {
+      UpdateSound();
+      if (_currentDebuffType == DebuffType.Sleep) {
+        // pass	
+      }
+      else if (_elapsedTime < _eventEndTime) {
+        if (!NoiseEventInstance.activeSelf && _currentDebuffType == DebuffType.Noise) {
+          _eventEndTime = -1.0f;
+          SetDebuffType(DebuffType.None);
+        }
+        if (!DanceEventInstance.activeSelf && _currentDebuffType == DebuffType.Dance) {
+          _eventEndTime = -1.0f;
+          SetDebuffType(DebuffType.None);
+        }
+      }
+      else if (_eventEndTime != -1.0f && _elapsedTime >= _eventEndTime) {
+        _eventEndTime = -1.0f;
+        SetDebuffType(DebuffType.None);
+      }
+      else if (_eventEndTime == -1.0f) {
+        RandomEvents();
+      }
+		}
+
+    private void RandomEvents() {
+      UnityEngine.Random.InitState((int)System.DateTime.Now.Ticks);
+      //int eventID = UnityEngine.Random.Range(0, 15);
+      int eventID = 3;
+      if (eventID == 0)
+      {
         UpdateSleep();
+        _eventEndTime = _elapsedTime + LoveDebuffTime;
         SetDebuffType(DebuffType.Love);
-			}
-			else if (_elapsedTime > GameDebuffStart && _elapsedTime < GameDebuffEnd) {
-        UpdateSleep();
+      }
+      else if (eventID == 1)
+      {
+        _eventEndTime = _elapsedTime + GameDebuffTime;
         SetDebuffType(DebuffType.Game);
-			}
-      else if (_elapsedTime > NoiseDebuffStart && _elapsedTime < NoiseDebuffEnd) {
+      }
+      else if (eventID == 2)
+      {
+        _eventEndTime = _elapsedTime + NO_DECIDED_TIME;
         SetDebuffType(DebuffType.Noise);
       }
-      else if (_elapsedTime > DanceDebuffStart && _elapsedTime < DanceDebuffEnd) {
+      else if (eventID == 3)
+      {
+        _eventEndTime = _elapsedTime + NO_DECIDED_TIME;
         SetDebuffType(DebuffType.Dance);
       }
-      else {
+      else
+      {
         UpdateSleep();
         SetDebuffType(DebuffType.None);
-			}
-		}
+      }
+    }
 
 		private void UpdateTimer() {
 			_currentPlayTime -= Time.deltaTime;
@@ -137,7 +170,8 @@ namespace ReadingMission {
 				}
 				Paper.GetComponent<CameraCanvas>().CopyCanvas(PaperToRead.GetComponent<CameraCanvas>());
 				PaperToRead.GetComponent<CameraCanvas>().ClearCanvas(PaperTextures[ReadCount % PaperTextures.Length]);
-			}
+        pageFlipSound.Play();
+      }
 		}
 
 		private void UpdateSleep() {
@@ -155,7 +189,12 @@ namespace ReadingMission {
 			}
 		}
 
-		private Color32 GetTxtColor(float ratio) {
+    private void UpdateSound() {
+      clockSound.volume = _elapsedTime / PlayTime;
+    }
+
+
+    private Color32 GetTxtColor(float ratio) {
 			return new Color32(
 				(byte) Math.Floor(_maxColor.r * ratio + _minColor.r * (1 - ratio)),
 				(byte) Math.Floor(_maxColor.g * ratio + _minColor.g * (1 - ratio)),

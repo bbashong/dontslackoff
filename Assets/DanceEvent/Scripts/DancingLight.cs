@@ -5,21 +5,22 @@ using UnityEngine.SceneManagement;
 
 public class DancingLight : MonoBehaviour {
 
-  private float nextActionTime;
-  private float period = .4f;
-
   public Light sp1;
   public Light sp2;
   //public Light sp3;
   public Light sp4;
   public Light sp5;
-
   public Light original_Light;
+  public AudioClip sound1;
+  public AudioClip sound2;
 
   private Color initColor;
-  private bool isStarted;
   private AudioSource au;
-  
+
+  private float nextActionTime;
+  private float period = .4f;
+  private bool isStarted;
+
   void OnEnable() {
     nextActionTime = 0f;
     //original_Light.SetActive(false);
@@ -27,6 +28,14 @@ public class DancingLight : MonoBehaviour {
     RenderSettings.ambientLight = RenderSettings.ambientLight * 0.2f;
     isStarted = true;
     au = GetComponent<AudioSource>();
+
+    Random.InitState((int)System.DateTime.Now.Ticks);
+    int randomClipId = Random.Range(0, 2);
+    if (randomClipId == 0)
+      au.clip = sound1;
+    else
+      au.clip = sound2;
+    au.Play();
   }
 	
 	// Update is called once per frame
