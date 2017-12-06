@@ -30,7 +30,6 @@ Shader "Custom/PaperStackShader" {
                 float2 uv : TEXCOORD0;
                 fixed4 diff : COLOR0;
                 float4 vertex : SV_POSITION;
-                float4 orig_vertex : IDK;
             };
 
             float _MinHeight;
@@ -38,7 +37,6 @@ Shader "Custom/PaperStackShader" {
             {
                 v2f o;
                 v.vertex.y -= _MinHeight;
-                o.orig_vertex = v.vertex.y;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.texcoord;
                 half3 worldNormal = UnityObjectToWorldNormal(v.normal);
@@ -60,7 +58,7 @@ Shader "Custom/PaperStackShader" {
             {
                 fixed4 col = tex2D(_MainTex, i.uv);
                 col *= i.diff;
-                if (i.orig_vertex.y < 0)
+                if (i.vertex.y < 0)
                 {
                     col.r = 0;
                     col.g = 0;
