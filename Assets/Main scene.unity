@@ -4150,7 +4150,7 @@ MonoBehaviour:
   PercentageTxt: {fileID: 1837507506}
   SubTitleText: {fileID: 1719246096}
   pageFlipSound: {fileID: 1051431540}
-  PlayTime: 90
+  PlayTime: 210
   ReadCount: 30
   PaperTextures:
   - {fileID: 2800000, guid: 591c197d3a47b4f6f9a88454db58dc9b, type: 3}
@@ -4168,8 +4168,14 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 5763a47b10f7045f5b104caef719070a, type: 3}
   - {fileID: 2800000, guid: ae54c15eac49c4c2aa30fab3b953a42c, type: 3}
   - {fileID: 2800000, guid: 70e670f7ae39d47f4a894b256bcd9e54, type: 3}
-  LoveDebuffTime: 20
-  GameDebuffTime: 20
+  LoveDebuffStart: 30
+  LoveDebuffEnd: 60
+  GameDebuffStart: 70
+  GameDebuffEnd: 100
+  NoiseDebuffStart: 110
+  NoiseDebuffEnd: 140
+  DanceDebuffStart: 150
+  DanceDebuffEnd: 180
   InitialFallingSleepTime: 40
 --- !u!114 &1259986422
 MonoBehaviour:

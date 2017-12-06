@@ -31,8 +31,14 @@ namespace ReadingMission {
 		public float PlayTime;
 		public uint ReadCount;
 		public Texture2D[] PaperTextures;
-		public float LoveDebuffTime;
-		public float GameDebuffTime;
+		public float LoveDebuffStart;	
+		public float LoveDebuffEnd;	
+		public float GameDebuffStart;	
+		public float GameDebuffEnd;
+    public float NoiseDebuffStart;
+    public float NoiseDebuffEnd;
+    public float DanceDebuffStart;
+    public float DanceDebuffEnd;
     public float InitialFallingSleepTime;
 
 		private const string TimeFormat = "Remain Time: {0}";	
@@ -61,8 +67,7 @@ namespace ReadingMission {
 		private DebuffType _currentDebuffType;
 		private CameraBrush _brush;
 		private float _elapsedTime;
-    private float _eventEndTime;
-    private const float NO_DECIDED_TIME = 9999f; // should be larger than Playtime
+    private Color _originalSleepColor;
 
 
     private void Start () {
@@ -91,57 +96,37 @@ namespace ReadingMission {
       if (_currentDebuffType == DebuffType.Sleep) {
         // pass	
       }
-      else if (_elapsedTime < _eventEndTime) {
-        if (!NoiseEventInstance.activeSelf && _currentDebuffType == DebuffType.Noise) {
-          _eventEndTime = -1.0f;
-          SetDebuffType(DebuffType.None);
-        }
-        if (!DanceEventInstance.activeSelf && _currentDebuffType == DebuffType.Dance) {
-          _eventEndTime = -1.0f;
-          SetDebuffType(DebuffType.None);
-        }
-      }
-      else if (_eventEndTime != -1.0f && _elapsedTime >= _eventEndTime) {
-        _eventEndTime = -1.0f;
-        SetDebuffType(DebuffType.None);
-      }
-      else if (_eventEndTime == -1.0f) {
-        RandomEvents();
-      }
-		}
-
-    private void RandomEvents() {
-      UnityEngine.Random.InitState((int)System.DateTime.Now.Ticks);
-      int eventID = UnityEngine.Random.Range(0, 15);
-      //int eventID = 3;
-      if (eventID == 0)
-      {
+      else if (_elapsedTime > LoveDebuffStart && _elapsedTime < LoveDebuffEnd) {
         UpdateSleep();
-        _eventEndTime = _elapsedTime + LoveDebuffTime;
         SetDebuffType(DebuffType.Love);
       }
-      else if (eventID == 1)
-      {
-        _eventEndTime = _elapsedTime + GameDebuffTime;
+      else if (_elapsedTime > GameDebuffStart && _elapsedTime < GameDebuffEnd) {
+        UpdateSleep();
         SetDebuffType(DebuffType.Game);
       }
-      else if (eventID == 2)
-      {
-        _eventEndTime = _elapsedTime + NO_DECIDED_TIME;
+      else if (_elapsedTime > NoiseDebuffStart && _elapsedTime < NoiseDebuffEnd) {
         SetDebuffType(DebuffType.Noise);
       }
-      else if (eventID == 3)
-      {
-        _eventEndTime = _elapsedTime + NO_DECIDED_TIME;
+      else if (_elapsedTime >= NoiseDebuffEnd && _elapsedTime < DanceDebuffStart) {
+        BackinSleep();
+        UpdateSleep();
+        SetDebuffType(DebuffType.None);
+      }
+      else if (_elapsedTime > DanceDebuffStart && _elapsedTime < DanceDebuffEnd) {
         SetDebuffType(DebuffType.Dance);
       }
-      else
+      else if (_elapsedTime >= DanceDebuffEnd && _elapsedTime < DanceDebuffEnd + 10)
       {
+        BackinSleep();
+        UpdateSleep();
+        SetDebuffType(DebuffType.None);
+      }
+      else {
         UpdateSleep();
         SetDebuffType(DebuffType.None);
       }
     }
-
+    
 		private void UpdateTimer() {
 			_currentPlayTime -= Time.deltaTime;
 			if (_currentPlayTime <= 0) {
@@ -188,6 +173,19 @@ namespace ReadingMission {
                 SleepBlocker.color = color;
 			}
 		}
+
+    private void PauseSleep()
+    {
+      var color = SleepBlocker.color;
+      _originalSleepColor = SleepBlocker.color;
+      color.a = 0;
+      SleepBlocker.color = color;
+    }
+
+    private void BackinSleep()
+    {
+      SleepBlocker.color = _originalSleepColor;
+    }
 
     private void UpdateSound() {
       clockSound.volume = _elapsedTime / PlayTime;
@@ -297,14 +295,14 @@ namespace ReadingMission {
         SubTitleText.text = "Unwelcomed intruder comes...";
         SubTitleText.GetComponent<CanvasRenderer>().SetAlpha(1.0f);
         _brush.SetBrushType(CameraBrush.BrushType.Noise);
-
+        PauseSleep();
         NoiseEventInstance.SetActive(true);
       }
       else if (type == DebuffType.Dance) {
         SubTitleText.text = "My Roommates held HELL Dancing Party....";
         SubTitleText.GetComponent<CanvasRenderer>().SetAlpha(1.0f);
         _brush.SetBrushType(CameraBrush.BrushType.Dance);
-
+        PauseSleep();
         DanceEventInstance.SetActive(true);
       }
 			Invoke("HideSubtitle", 5);

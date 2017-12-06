@@ -32,7 +32,7 @@ public class Unwelcome : MonoBehaviour {
 	void Update () {
     elased_t += Time.deltaTime;
 
-    if (elased_t > 3.0f && elased_t <= 12.0f)
+    if (elased_t > 3.0f && elased_t <= 9.0f)
     {
       if (!wasPlayCome1)
       {
@@ -46,7 +46,7 @@ public class Unwelcome : MonoBehaviour {
       }
       
     }
-    else if (elased_t > 12.0f && elased_t <= 21.0f)
+    else if (elased_t > 9.0f && elased_t <= 15.0f)
     {
       if (!wasPlayCome2)
       {
@@ -59,7 +59,7 @@ public class Unwelcome : MonoBehaviour {
         wasPlayCome2 = true;
       }
     }
-    else if (elased_t > 21.0f && elased_t <= 35.0f)
+    else if (elased_t > 15.0f && elased_t <= 30.0f)
     {
       if (!wasPlayLoop)
       {
@@ -72,7 +72,7 @@ public class Unwelcome : MonoBehaviour {
         wasPlayLoop = true;
       }
     }
-    else if (elased_t > 35.0f)
+    else if (elased_t > 30.0f)
     {
       this.gameObject.SetActive(false);
     }
