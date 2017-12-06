@@ -21,11 +21,15 @@ namespace ReadingMission {
             Normal,
             Love,
             Game,
-            Sleep
+            Sleep,
+            Noise,
+            Dance
         }
         public Texture2D BrushNormal;
         public Texture2D BrushLove;
         public Texture2D BrushGame;
+        public Texture2D BrushNoise;
+        public Texture2D BrushDance;
         public Vector2 BrushSize = new Vector2(0.5f, 0.5f);
         public GameObject Target;
         private Texture2D _brush;
@@ -34,6 +38,7 @@ namespace ReadingMission {
         private BrushType _brushType;
         private float _elapsedTime = 0.0f;
         private float _nextAngleChange = 0.0f;
+        private float _nextSizeChange = 0.0f;
         private Vector2 _angleDiff = new Vector2(0.0f, 0.0f);
         private Vector2 _brushSizeScale = new Vector2(1.0f, 1.0f);
 
@@ -65,6 +70,23 @@ namespace ReadingMission {
             if (_brushType == BrushType.Game) {
                 direction += _angleDiff.x * _cam.transform.right;
                 direction += _angleDiff.y * _cam.transform.up;
+            }
+            else if (_brushType == BrushType.Noise) {
+                _nextSizeChange += Time.deltaTime;
+                if (_nextSizeChange > 0.3f) {
+                  _brushSizeScale = new Vector2(UnityEngine.Random.Range(0.2f, 1.0f), 1.0f);
+                  _nextSizeChange = 0.0f;
+                  ResizeBrush();
+                }
+            }
+            else if (_brushType == BrushType.Dance) {
+              _nextSizeChange += Time.deltaTime;
+              if (_nextSizeChange > 0.3f)
+              {
+                _brushSizeScale = new Vector2(UnityEngine.Random.Range(0.5f, 1.5f), UnityEngine.Random.Range(0.5f, 1.5f));
+                _nextSizeChange = 0.0f;
+                ResizeBrush();
+              }
             }
             if (Physics.Raycast(_cam.transform.position, direction, out hit) 
                 && string.Equals(hit.transform.gameObject.name, Target.name)) {
@@ -124,6 +146,12 @@ namespace ReadingMission {
             }
             else if (_brushType == BrushType.Game) {
                 _brush = BrushGame;
+            }
+            else if (_brushType == BrushType.Noise) {
+                _brush = BrushNoise;
+            }
+            else if (_brushType == BrushType.Dance) {
+                _brush = BrushDance;
             }
             ResizeBrush();
         }
