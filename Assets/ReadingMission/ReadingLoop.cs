@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Timers;
 using headmotion;
 using UnityEngine;
@@ -72,6 +73,7 @@ namespace ReadingMission
         private CameraBrush _brush;
         private float _elapsedTime;
         private Color _originalSleepColor;
+        private Mesh _origMesh;
 
 
         private void Start()
@@ -85,8 +87,11 @@ namespace ReadingMission
             SetPlayTimeTxt();
             SetPercentageTxt(0);
             SetReadCountTxt(false);
-            SetPaperStackThickness(PaperToReadStack, PaperToRead, _currentReadCount);
-            SetPaperStackThickness(PaperCompleteStack, PaperComplete, ReadCount - _currentReadCount);
+//            _origMesh = PaperToReadStack.GetComponent<MeshFilter>().mesh;
+//            PaperToReadStack.GetComponent<MeshFilter>().mesh = new Mesh();
+//            PaperCompleteStack.GetComponent<MeshFilter>().mesh = new Mesh();
+            SetPaperStackThickness(PaperToReadStack, _origMesh, PaperToRead, _currentReadCount);
+            SetPaperStackThickness(PaperCompleteStack, _origMesh, PaperComplete, ReadCount - _currentReadCount);
             GetComponent<VRGesture>().ShakeHandler += OnShake;
             _elapsedTime = 0.0f;
             clockSound = GetComponent<AudioSource>();
@@ -160,8 +165,8 @@ namespace ReadingMission
                 // swap paper
                 _currentReadCount -= 1;
                 SetReadCountTxt(true);
-                SetPaperStackThickness(PaperToReadStack, PaperToRead, _currentReadCount);
-                SetPaperStackThickness(PaperCompleteStack, PaperComplete, ReadCount - _currentReadCount);
+                SetPaperStackThickness(PaperToReadStack, _origMesh, PaperToRead, _currentReadCount);
+                SetPaperStackThickness(PaperCompleteStack, _origMesh, PaperComplete, ReadCount - _currentReadCount);
                 PaperComplete.GetComponent<CameraCanvas>().CopyCanvas(Paper.GetComponent<CameraCanvas>());
                 if (_currentReadCount == 0)
                 {
@@ -258,7 +263,7 @@ namespace ReadingMission
             }
         }
 
-        private static void SetPaperStackThickness(GameObject paperStack, GameObject topPaper, uint count)
+        private static void SetPaperStackThickness(GameObject paperStack, Mesh origMesh, GameObject topPaper, uint count)
         {
             if (count == 0)
             {
@@ -268,13 +273,12 @@ namespace ReadingMission
             }
             paperStack.GetComponent<Renderer>().enabled = true;
             topPaper.GetComponent<Renderer>().enabled = true;
-            var beforeScale = paperStack.transform.localScale;
-            paperStack.transform.localScale = new Vector3(beforeScale.x, count * ThicknessPerPaper, beforeScale.z);
-            var beforePos = paperStack.transform.localPosition;
-            paperStack.transform.localPosition = new Vector3(beforePos.x, OriginalPaperY + 0.5f * count * ThicknessPerPaper, beforePos.z);
-
-            beforePos = topPaper.transform.localPosition;
-            topPaper.transform.localPosition = new Vector3(beforePos.x, OriginalPaperY + count * ThicknessPerPaper + 0.0001f, beforePos.z);
+            var height = paperStack.GetComponent<MeshFilter>().mesh.bounds.size.y;
+            paperStack.GetComponent<Renderer>().material.SetFloat("_MinHeight", height - count * ThicknessPerPaper);
+            
+            
+            var beforePos = topPaper.transform.localPosition;
+            topPaper.transform.localPosition = new Vector3(beforePos.x, OriginalPaperY + count * ThicknessPerPaper * paperStack.transform.localScale.y + 0.001f, beforePos.z);
         }
 
         private void OnSlept()
