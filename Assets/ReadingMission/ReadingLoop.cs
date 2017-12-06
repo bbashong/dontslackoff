@@ -112,8 +112,8 @@ namespace ReadingMission {
 
     private void RandomEvents() {
       UnityEngine.Random.InitState((int)System.DateTime.Now.Ticks);
-      //int eventID = UnityEngine.Random.Range(0, 15);
-      int eventID = 3;
+      int eventID = UnityEngine.Random.Range(0, 15);
+      //int eventID = 3;
       if (eventID == 0)
       {
         UpdateSleep();
