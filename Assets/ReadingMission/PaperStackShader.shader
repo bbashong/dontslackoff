@@ -19,7 +19,6 @@ Shader "Custom/PaperStackShader" {
         
             CGPROGRAM
             // Upgrade NOTE: excluded shader from DX11; has structs without semantics (struct v2f members y)
-            #pragma exclude_renderers d3d11
             #pragma vertex vert
             #pragma fragment frag
             #include "UnityCG.cginc"
