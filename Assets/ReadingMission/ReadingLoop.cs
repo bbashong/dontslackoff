@@ -50,7 +50,6 @@ namespace ReadingMission
         private const string PercentFormat = "{0}%";
         private const float ThicknessPerPaper = 0.01f;
         private const float OriginalPaperY = 1.49f;
-
         private AudioSource clockSound;
 
         private enum DebuffType
@@ -72,7 +71,7 @@ namespace ReadingMission
         private DebuffType _currentDebuffType;
         private CameraBrush _brush;
         private float _elapsedTime;
-        private Color _originalSleepColor;
+        private bool _sleepPaused;
 
 
         private void Start()
@@ -92,6 +91,7 @@ namespace ReadingMission
             _elapsedTime = 0.0f;
             clockSound = GetComponent<AudioSource>();
             clockSound.volume = 0.0f;
+            _sleepPaused = false;
         }
 
         private void Update()
@@ -120,7 +120,7 @@ namespace ReadingMission
             }
             else if (_elapsedTime >= NoiseDebuffEnd && _elapsedTime < DanceDebuffStart)
             {
-                BackinSleep();
+                ResumeSleep();
                 UpdateSleep();
                 SetDebuffType(DebuffType.None);
             }
@@ -130,7 +130,7 @@ namespace ReadingMission
             }
             else if (_elapsedTime >= DanceDebuffEnd && _elapsedTime < DanceDebuffEnd + 10)
             {
-                BackinSleep();
+                ResumeSleep();
                 UpdateSleep();
                 SetDebuffType(DebuffType.None);
             }
@@ -180,7 +180,7 @@ namespace ReadingMission
 
         private void UpdateSleep()
         {
-            if (_remainFallingSleepTime <= 0)
+            if (_sleepPaused || _remainFallingSleepTime <= 0)
             {
                 return;
             }
@@ -197,17 +197,19 @@ namespace ReadingMission
             }
         }
 
-        private void PauseSleep()
+        private void PauseSleep() 
         {
+            _sleepPaused = true;
+            _remainFallingSleepTime = _currentFallingSleepTime;
             var color = SleepBlocker.color;
-            _originalSleepColor = SleepBlocker.color;
             color.a = 0;
             SleepBlocker.color = color;
+            
         }
 
-        private void BackinSleep()
+        private void ResumeSleep()
         {
-            SleepBlocker.color = _originalSleepColor;
+            _sleepPaused = false;
         }
 
         private void UpdateSound()
