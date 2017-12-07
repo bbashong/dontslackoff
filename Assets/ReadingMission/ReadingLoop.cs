@@ -73,7 +73,6 @@ namespace ReadingMission
         private CameraBrush _brush;
         private float _elapsedTime;
         private Color _originalSleepColor;
-        private Mesh _origMesh;
 
 
         private void Start()
@@ -87,11 +86,8 @@ namespace ReadingMission
             SetPlayTimeTxt();
             SetPercentageTxt(0);
             SetReadCountTxt(false);
-//            _origMesh = PaperToReadStack.GetComponent<MeshFilter>().mesh;
-//            PaperToReadStack.GetComponent<MeshFilter>().mesh = new Mesh();
-//            PaperCompleteStack.GetComponent<MeshFilter>().mesh = new Mesh();
-            SetPaperStackThickness(PaperToReadStack, _origMesh, PaperToRead, _currentReadCount);
-            SetPaperStackThickness(PaperCompleteStack, _origMesh, PaperComplete, ReadCount - _currentReadCount);
+            SetPaperStackThickness(PaperToReadStack, PaperToRead, _currentReadCount);
+            SetPaperStackThickness(PaperCompleteStack, PaperComplete, ReadCount - _currentReadCount);
             GetComponent<VRGesture>().ShakeHandler += OnShake;
             _elapsedTime = 0.0f;
             clockSound = GetComponent<AudioSource>();
@@ -165,8 +161,8 @@ namespace ReadingMission
                 // swap paper
                 _currentReadCount -= 1;
                 SetReadCountTxt(true);
-                SetPaperStackThickness(PaperToReadStack, _origMesh, PaperToRead, _currentReadCount);
-                SetPaperStackThickness(PaperCompleteStack, _origMesh, PaperComplete, ReadCount - _currentReadCount);
+                SetPaperStackThickness(PaperToReadStack, PaperToRead, _currentReadCount);
+                SetPaperStackThickness(PaperCompleteStack, PaperComplete, ReadCount - _currentReadCount);
                 PaperComplete.GetComponent<CameraCanvas>().CopyCanvas(Paper.GetComponent<CameraCanvas>());
                 if (_currentReadCount == 0)
                 {
@@ -263,7 +259,7 @@ namespace ReadingMission
             }
         }
 
-        private static void SetPaperStackThickness(GameObject paperStack, Mesh origMesh, GameObject topPaper, uint count)
+        private static void SetPaperStackThickness(GameObject paperStack, GameObject topPaper, uint count)
         {
             if (count == 0)
             {
@@ -294,7 +290,7 @@ namespace ReadingMission
             {
                 return;
             }
-            if (timePerShake <= 0.15)
+            if (timePerShake <= 0.3f)
             {
                 _currentFallingSleepTime *= 0.666f;
                 _remainFallingSleepTime = _currentFallingSleepTime;

@@ -152,11 +152,9 @@ namespace headmotion
                 var nextType = 0; //0: unknown, 1: pos, 2: neg
                 var diffSum = 0.0f;
                 var shakeCount = 0;
-                var shakeDuration = 0.0f;
                 const float minShake = 40.0f;
                 
                 var beforeY = hdms.First().eulerAngles.y;
-                var beforeShakeTime = float.NaN; 
                 var index = 0;
                 foreach (var hdm in hdms) {
                     if (index < recogIndex[Gesture.No]) {
@@ -174,21 +172,18 @@ namespace headmotion
                                 nextType = 1;
                             }
                             shakeCount += 1;
-                            beforeShakeTime = hdm.timestamp;
                         }
                     }
                     else if (nextType == 1) {
                         if (diffSum > minShake) {
                             nextType = 2;
                             shakeCount += 1;
-                            shakeDuration = hdm.timestamp - beforeShakeTime;
                         }
                     }
                     else if (nextType == 2) {
                         if (diffSum < -minShake) {
                             nextType = 1;
                             shakeCount += 1;
-                            shakeDuration = hdm.timestamp - beforeShakeTime;
                         }
                     }
                 }

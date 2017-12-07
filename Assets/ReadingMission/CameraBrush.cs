@@ -36,7 +36,6 @@ namespace ReadingMission {
         private Camera _cam;
         private Texture2D _resizedBrush;
         private BrushType _brushType;
-        private float _elapsedTime = 0.0f;
         private float _nextAngleChange = 0.0f;
         private float _nextSizeChange = 0.0f;
         private Vector2 _angleDiff = new Vector2(0.0f, 0.0f);
