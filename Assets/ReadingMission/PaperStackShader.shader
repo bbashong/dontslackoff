@@ -1,5 +1,4 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
+﻿
 Shader "Custom/PaperStackShader" {
 	Properties {
 		_Color ("Color", Color) = (1,1,1,1)
@@ -9,34 +8,34 @@ Shader "Custom/PaperStackShader" {
 		_MinHeight ("MinHeight", Float) = 0.5
 	}
 	SubShader {
-         Tags {"Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent"}
-         Blend SrcAlpha OneMinusSrcAlpha
-		 LOD 200
-		
+            Tags {"Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent"}
+//            ZWrite Off
+            Blend SrcAlpha OneMinusSrcAlpha
 		Pass
         {
             Tags {"LightMode"="ForwardBase"}
         
             CGPROGRAM
-            // Upgrade NOTE: excluded shader from DX11; has structs without semantics (struct v2f members y)
             #pragma vertex vert
             #pragma fragment frag
             #include "UnityCG.cginc"
             #include "UnityLightingCommon.cginc"
 
+            float _MinHeight;
             struct v2f
             {
                 float2 uv : TEXCOORD0;
                 fixed4 diff : COLOR0;
                 float4 vertex : SV_POSITION;
+                float4 orig_vertex : TEXCOORD1;
             };
 
-            float _MinHeight;
             v2f vert (appdata_base v)
             {
                 v2f o;
-                v.vertex.y -= _MinHeight;
-                o.vertex = UnityObjectToClipPos(v.vertex);
+                o.orig_vertex = v.vertex;
+                o.orig_vertex.y -= _MinHeight;
+                o.vertex = UnityObjectToClipPos(o.orig_vertex);
                 o.uv = v.texcoord;
                 half3 worldNormal = UnityObjectToWorldNormal(v.normal);
                 half nl = max(0, dot(worldNormal, _WorldSpaceLightPos0.xyz));
@@ -57,11 +56,8 @@ Shader "Custom/PaperStackShader" {
             {
                 fixed4 col = tex2D(_MainTex, i.uv);
                 col *= i.diff;
-                if (i.vertex.y < 0)
+                if (i.orig_vertex.y < 0.0f)
                 {
-                    col.r = 0;
-                    col.g = 0;
-                    col.b = 0;
                     col.a = 0;
                 }
                 else {
